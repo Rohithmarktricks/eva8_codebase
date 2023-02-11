@@ -16,11 +16,13 @@ class Trainer:
         self.train_acc = []
         self.test_losses = []
         self.test_acc = []
+        self.train_loss_avg = []
+        self.train_acc_avg = []
         self.misclassified_imgs = {}
 
 
     def get_train_stats(self):
-        return list(map(lambda x: x.cpu().item(), self.train_losses)), self.train_acc
+        return list(map(lambda x: x.cpu().item(), self.train_loss_avg)), self.train_acc_avg
     
     def get_test_stats(self):
         return list(map(lambda x: x.cpu().item(), self.test_losses)), self.test_acc
@@ -30,6 +32,8 @@ class Trainer:
         pbar = tqdm(train_loader)
         correct = 0
         processed = 0
+        loss_epoch = 0
+        acc_epoch = 0 
 
         for batch_idx, (data, target) in enumerate(pbar):
 
@@ -41,6 +45,7 @@ class Trainer:
 
             loss = self.criterion(y_pred, target)
             self.train_losses.append(loss)
+            loss_epoch += loss
 
             loss.backward()
             self.optimizer.step()
@@ -51,6 +56,11 @@ class Trainer:
             processed += len(data)
             pbar.set_description(desc= f' Loss={loss.item()} Batch_id={batch_idx} Accuracy={100*correct/processed:0.2f}')
             self.train_acc.append(100*correct/processed)
+        
+        loss_epoch /= len(train_loader.dataset)
+        self.train_loss_avg.append(loss_epoch)
+        self.train_acc_avg.append(100. * correct / len(train_loader.dataset))
+        
         
 
     def test(self, test_loader):
