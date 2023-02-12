@@ -115,4 +115,7 @@ def get_sgd_optimizer(model, lr=0.001, momentum=0.9, scheduler=False):
         return optimizer, scheduler
     else:
         return optimizer
+    
+def get_adam_optimizer(model, lr=0.001):
+    return optim.Adam(model.parameters(), lr=lr)
 

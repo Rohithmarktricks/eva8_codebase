@@ -28,8 +28,6 @@ def plot_cam(cam_obj, misclassified_images_dict, keys_list=None):
     fig.tight_layout()
     plt.subplots_adjust(hspace=0.5)
     idx = 0
-    # keys_list = iter(list(misclassified_images_dict.keys()))
-
 
     for i in range(20):
         idx = next(keys_list)
@@ -37,8 +35,6 @@ def plot_cam(cam_obj, misclassified_images_dict, keys_list=None):
         pred_label = idx_to_class(misclassified_images_dict[idx][2].item())
 
         img2 = misclassified_images_dict[idx][0].unsqueeze(dim=0)
-        print(idx, misclassified_images_dict[idx][2])
-
 
         true_label_idx = misclassified_images_dict[idx][2]
         target = [ClassifierOutputTarget(true_label_idx)]
