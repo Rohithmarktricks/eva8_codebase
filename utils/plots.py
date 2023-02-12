@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from torchsummary import summary
 
 
 # Global reference
@@ -8,6 +9,9 @@ classes = ('plane', 'car', 'bird', 'cat',
 
 def idx_to_class(idx):
     return classes[idx]
+
+def model_summary(model, input_size=(3,32,32)):
+    return summary(model, input_size=input_size)
 
 
 def plot_stats(train_stats, test_stats, labels,xlabel=None, ylabel=None, title=None):
