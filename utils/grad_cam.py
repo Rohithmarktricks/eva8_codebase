@@ -3,7 +3,12 @@ import matplotlib.pyplot as plt
 import cv2
 from pytorch_grad_cam import GradCAM
 from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
-from plots import idx_to_class
+
+classes = ('plane', 'car', 'bird', 'cat',
+           'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
+
+def idx_to_class(idx):
+    return classes[idx]
 
 
 def get_cam(model, target_layers, use_cuda=True):
