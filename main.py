@@ -151,6 +151,8 @@ class Trainer:
                 # Compute and store test loss and accuracy
                 self.test_losses.append(loss.item())
                 self.test_acc.append(100. * correct / total)
+                test_losses.append(loss.item())
+                test_accs.append(100. * correct / total)
 
             # Print and store test loss and accuracy
             test_loss = sum(test_losses) / len(testloader)
