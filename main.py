@@ -18,6 +18,11 @@ class Trainer:
         self.test_acc = []
         self.train_loss_avg = []
         self.train_acc_avg = []
+        self.epoch_train_loss = []
+        self.epoch_train_acc = []
+        self.epoch_test_loss = []
+        self.epoch_test_acc = []
+
         self.misclassified_imgs = {}
 
 
@@ -86,6 +91,74 @@ class Trainer:
         self.test_acc.append(100. * correct / len(test_loader.dataset))
 
     
+    def train_resnet(self, trainloader):
+        self.model.train()
+
+        running_loss = 0.0
+        correct = 0
+        total = 0
+
+        for batch_idx, (inputs, targets) in enumerate(tqdm(trainloader)):
+            inputs, targets = inputs.to(self.device), targets.to(self.device)
+            self.optimizer.zero_grad()
+
+            # Forward Pass
+            outputs = self.model(inputs)
+            loss = self.criterion(outputs, targets)
+
+            # Backward pass and optimization
+            loss.backward()
+            self.optimizer.step()
+            self.scheduler.step()
+
+            # Compute the training accuracy
+            _, predicted = outputs.max(1)
+            total += targets.size(0)
+            correct += predicted.eq(targets).sum().item()
+
+            # compute and store training loss and accuracy
+            self.train_losses.append(loss.item())
+            self.train_acc.append(100. * correct / total)
+        
+        # print and store training loss and accuracy
+        epoch_train_loss = sum(self.train_losses[-len(trainloader):])/ len(trainloader)
+        epoch_train_acc = sum(self.train_acc[-len(trainloader):])/len(trainloader)
+
+        self.epoch_train_loss.append(epoch_train_loss)
+        self.epoch_train_acc.append(epoch_train_acc)
+
+        print(f"training loss: {epoch_train_loss:.4f}, accuracy: {epoch_train_acc:.2f}, Optimzer LR: {self.optimizer.param_groups[0]['lr']}")
+
+
+    def test_resnet(self, testloader):
+        self.model.eval()
+
+        with torch.no_grad():
+            for batch_idx, (inputs, targets) in enumerate(tqdm(testloader)):
+                inputs, targets = inputs.to(self.device), targets.to(self.device)
+
+                # Forward pass
+                outputs = self.model(inputs)
+                loss = self.criterion(outputs, targets)
+
+                # Test accuracy
+                _, predicted = outputs.max(1)
+                total = targets.size(0)
+                correct = predicted.eq(targets).sum().item()
+
+                self.test_losses.append(loss.item())
+                self.test_acc.append(100. * correct/ total)
+            
+            test_loss = sum(self.test_losses) / len(testloader)
+            test_acc = sum(self.test_acc) / len(testloader)
+            
+            self.epoch_test_loss.append(test_loss)
+            self.epoch_test_acc.append(test_acc)
+
+            print(f"Test loss: {test_loss:.4f}, accuracy: {test_acc:.2f}")
+        
+
+
     def get_misclassified_images(self, test_loader):
         self.model.eval()
         idx = 0
@@ -116,6 +189,6 @@ def get_sgd_optimizer(model, lr=0.001, momentum=0.9, scheduler=False):
     else:
         return optimizer
     
-def get_adam_optimizer(model, lr=0.001):
-    return optim.Adam(model.parameters(), lr=lr)
+def get_adam_optimizer(model, lr=0.001, weight_decay=1e-2):
+    return optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
 
