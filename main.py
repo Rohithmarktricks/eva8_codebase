@@ -130,9 +130,11 @@ class Trainer:
         print(f"training loss: {epoch_train_loss:.4f}, accuracy: {epoch_train_acc:.2f}, Optimzer LR: {self.optimizer.param_groups[0]['lr']}")
 
 
-    def test_resnet(self, testloader):
+    def test(self, testloader):
         self.model.eval()
-
+        test_losses = []
+        test_accs = []
+        
         with torch.no_grad():
             for batch_idx, (inputs, targets) in enumerate(tqdm(testloader)):
                 inputs, targets = inputs.to(self.device), targets.to(self.device)
@@ -141,21 +143,21 @@ class Trainer:
                 outputs = self.model(inputs)
                 loss = self.criterion(outputs, targets)
 
-                # Test accuracy
+                # Compute test accuracy
                 _, predicted = outputs.max(1)
                 total = targets.size(0)
                 correct = predicted.eq(targets).sum().item()
 
+                # Compute and store test loss and accuracy
                 self.test_losses.append(loss.item())
-                self.test_acc.append(100. * correct/ total)
-            
-            test_loss = sum(self.test_losses) / len(testloader)
-            test_acc = sum(self.test_acc) / len(testloader)
-            
+                self.test_acc.append(100. * correct / total)
+
+            # Print and store test loss and accuracy
+            test_loss = sum(test_losses) / len(testloader)
+            test_acc = sum(test_accs) / len(testloader)
+            print(f"Test loss: {test_loss:.4f}, accuracy: {test_acc:.2f}")
             self.epoch_test_loss.append(test_loss)
             self.epoch_test_acc.append(test_acc)
-
-            print(f"Test loss: {test_loss:.4f}, accuracy: {test_acc:.2f}")
         
 
 
